@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Code Ki Duniya : Courses</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Favicon -->
+    <link href="https://img.icons8.com/?size=100&id=Lb2lVEO0t60w&format=png&color=000000" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="lib/animate/animate.min.css" rel="stylesheet">
+    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="css/style.css" rel="stylesheet">
+
+    <!-- Add Firebase SDKs before other scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBrjLAawJcTVU3ZWnARUiODi_Ak4oQPPtM",
+            authDomain: "sign-up-8e1fd.firebaseapp.com",
+            projectId: "sign-up-8e1fd",
+            storageBucket: "sign-up-8e1fd.appspot.com",
+            messagingSenderId: "1017405156646",
+            appId: "1:1017405156646:web:baffb06b8d3e33dd3765e7"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Add auth section back to navbar
+        const navbarNav = document.querySelector('.navbar-nav');
+        const authSection = document.createElement('div');
+        authSection.id = 'authSection';
+        navbarNav.appendChild(authSection);
+
+        // Check authentication state
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // User is signed in
+                authSection.innerHTML = `
+                    <div class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                            ${user.displayName || user.email}
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end rounded-lg shadow-sm">
+                            <div class="px-4 py-3">
+                                <div class="text-sm">${user.email}</div>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#" onclick="handleLogout()">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                `;
+                fetchEnrolledCourses();
+            } else {
+                // No user is signed in
+                authSection.innerHTML = '<a href="login.html" class="nav-item nav-link">Sign In</a>';
+                document.getElementById('noCoursesMessage').style.display = 'block';
+                document.getElementById('enrolledCoursesSection').innerHTML = '';
+            }
+        });
+
+        // Logout handler
+        window.handleLogout = function() {
+            auth.signOut()
+                .then(() => {
+                    window.location.reload();
+                })
+                .catch((error) => {
+                    console.error("Logout error:", error);
+                    alert('Error signing out: ' + error.message);
+                });
+        };
+
+        // Enroll in course function
+        async function enrollInCourse(courseId, courseName, courseDescription) {
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    const result = await Swal.fire({
+                        title: 'Please Sign In',
+                        text: 'You need to sign in to enroll in courses',
+                        icon: 'info',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sign In'
+                    });
+                    if (result.isConfirmed) {
+                        window.location.href = 'login.html';
+                    }
+                    return;
+                }
+
+                // Check if already enrolled
+                const enrollmentRef = db.collection("users").doc(user.uid).collection("enrolledCourses").doc(courseId);
+                const docSnap = await enrollmentRef.get();
+                
+                if (docSnap.exists) {
+                    await Swal.fire({
+                        title: 'Already Enrolled',
+                        text: 'You are already enrolled in this course',
+                        icon: 'info',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                // Show loading
+                Swal.showLoading();
+
+                // Create enrollment data
+                const enrollmentData = {
+                    courseId,
+                    courseName,
+                    courseDescription,
+                    enrolledAt: new Date().toISOString(),
+                    progress: 0,
+                    status: 'active'
+                };
+
+                // Add to enrolled courses
+                await enrollmentRef.set(enrollmentData);
+
+                await Swal.fire({
+                    title: 'Success!',
+                    text: 'Successfully enrolled in the course',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
+
+                // Refresh enrolled courses display
+                await fetchEnrolledCourses();
+
+            } catch (error) {
+                console.error('Enrollment error:', error);
+                await Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to enroll in the course. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
+
+        // Fetch enrolled courses
+        async function fetchEnrolledCourses() {
+            try {
+                const user = auth.currentUser;
+                if (!user) return;
+
+                const snapshot = await db.collection("users").doc(user.uid).collection("enrolledCourses").get();
+                const courses = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                displayEnrolledCourses(courses);
+            } catch (error) {
+                console.error("Error fetching enrolled courses:", error);
+            }
+        }
+
+        // Display enrolled courses
+        function displayEnrolledCourses(courses) {
+            const enrolledSection = document.getElementById('enrolledCoursesSection');
+            const noCoursesMsg = document.getElementById('noCoursesMessage');
+            
+            if (!courses || courses.length === 0) {
+                noCoursesMsg.style.display = 'block';
+                enrolledSection.innerHTML = '';
+                return;
+            }
+            
+            noCoursesMsg.style.display = 'none';
+            enrolledSection.innerHTML = courses.map(course => `
+                <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="course-item modern-card">
+                        <div class="position-relative overflow-hidden">
+                            <img class="img-fluid" style="height: 140px; object-fit: cover;" src="img/course-1.jpg" alt="">
+                            <div class="course-overlay">
+                                <div class="course-preview">
+                                    <span class="course-level"><i class="fas fa-chart-bar me-2"></i>In Progress</span>
+                                    <span class="course-duration"><i class="far fa-clock me-2"></i>${course.enrolledAt.split('T')[0]}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-content p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="course-category small">Enrolled Course</span>
+                                <span class="badge bg-success">${course.progress}% Complete</span>
+                            </div>
+                            <h6 class="course-title mb-2">${course.courseName}</h6>
+                            <p class="course-desc text-muted small mb-3">${course.courseDescription}</p>
+                            <div class="progress mb-3">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: ${course.progress}%" 
+                                     aria-valuenow="${course.progress}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                            <a href="${getCourseUrl(course.courseId)}" class="btn btn-sm btn-primary w-100">Continue Learning</a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Helper function to get course URL
+        function getCourseUrl(courseId) {
+            const courseUrls = {
+                'html1': 'html.html',
+                'css1': 'css.html',
+                'js1': 'js.html',
+                'py1': 'py.html'
+            };
+            return courseUrls[courseId] || '#';
+        }
+
+        // Make functions available globally
+        window.enrollInCourse = enrollInCourse;
+        window.fetchEnrolledCourses = fetchEnrolledCourses;
+        window.displayEnrolledCourses = displayEnrolledCourses;
+    </script>
+</head>
+
+<body>
+    <!-- Spinner Start -->
+    <div id="spinner"
+        class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+    <!-- Spinner End -->
+
+
+    <!-- Navbar Start -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm sticky-top">
+        <div class="container">
+            <a href="index.html" class="navbar-brand">
+                <img src="img/code-ki-duniya-logo.svg" alt="Code Ki Duniya Logo" height="48" style="margin-right: 12px;">
+                <span style="font-size: 1.8rem; margin-top: 8px;">Code Ki Duniya</span>
+            </a>
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <div class="navbar-nav ms-auto align-items-center">
+                    <a href="index.html" class="nav-item nav-link">Home</a>
+                    <a href="courses.html" class="nav-item nav-link active">Courses</a>
+                    <a href="about.html" class="nav-item nav-link">About</a>
+                    <a href="focus-mode.html" class="nav-item nav-link">Focus Mode</a>
+                    
+                    <a href="contact.html" class="nav-item nav-link">Contact</a>
+                    <!-- <div id="authSection">
+                        <a href="login.html" class="btn btn-primary rounded-pill px-3">
+                            <i class="fas fa-user"></i>
+                        </a>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Navbar End -->
+
+    <!-- Header Start -->
+    <div class="container-fluid bg-primary py-5 mb-5 page-header">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 text-center">
+                    <h1 class="display-3 text-white animated slideInDown">Courses</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-center">
+                            <li class="breadcrumb-item"><a class="text-white" href="#">Home</a></li>
+                            <li class="breadcrumb-item text-white active" aria-current="page">Courses</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Header End -->
+
+
+    <!-- Categories Start -->
+    <div class="container-xxl py-5 category">
+        <div class="container">
+            <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+                <h6 class="section-title bg-white text-center px-3">Categories</h6>
+                <h1 class="mb-5" style="color: #fb873f;">Popular Topics to Explore</h1>
+            </div>
+            <div class="row g-2 m-2">
+                <div class="col-lg-3 col-md-6  text-center">
+                    <div class="content shadow p-3 mb-2 wow fadeInUp" data-wow-delay="0.3s">
+
+                        <img src="img/cat1.png" class="img-fluid" alt="categories"></i>
+
+                        <h5 class="my-2">
+                            <a href="#" class="text-center">Microsoft Excel</a>
+                        </h5>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6  text-center">
+                    <div class="content shadow p-3 mb-2 wow fadeInUp" data-wow-delay="0.3s">
+
+                        <img src="img/cat2.png" class="img-fluid" alt="categories"></i>
+
+                        <h5 class="my-2">
+                            <a href="#" class="text-center"> AWS</a>
+                        </h5>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6  text-center">
+                    <div class="content shadow p-3 mb-2 wow fadeInUp" data-wow-delay="0.3s">
+
+                        <img src="img/cat3.png" class="img-fluid" alt="categories"></i>
+
+                        <h5 class="my-2">
+                            <a href="#" class="text-center">Python</a>
+                        </h5>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6  text-center">
+                    <div class="content shadow p-3 mb-2 wow fadeInUp" data-wow-delay="0.3s">
+
+                        <img src="img/cat4.png" class="img-fluid" alt="categories"></i>
+
+                        <h5 class="my-2">
+                            <a href="#" class="text-center">Java</a>
+                        </h5>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6  text-center">
+                    <div class="content shadow p-3 mb-2 wow fadeInUp" data-wow-delay="0.3s">
+
+                        <img src="img/cat5.png" class="img-fluid" alt="categories"></i>
+
+                        <h5 class="my-2">
+                            <a href="#" class="text-center">Web Design</a>
+                        </h5>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6  text-center">
+                    <div class="content shadow p-3 mb-2 wow fadeInUp" data-wow-delay="0.3s">
+
+                        <img src="img/cat6.png" class="img-fluid" alt="categories"></i>
+
+                        <h5 class="my-2">
+                            <a href="#" class="text-center">Web Development</a>
+                        </h5>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6  text-center">
+                    <div class="content shadow p-3 mb-2 wow fadeInUp" data-wow-delay="0.3s">
+
+                        <img src="img/cat7.png" class="img-fluid" alt="categories"></i>
+
+                        <h5 class="my-2">
+                            <a href="#" class="text-center">MySQL</a>
+                        </h5>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6  text-center">
+                    <div class="content shadow p-3 mb-2 wow fadeInUp" data-wow-delay="0.3s">
+
+                        <img src="img/cat8.png" class="img-fluid" alt="categories"></i>
+
+                        <h5 class="my-2">
+                            <a href="#" class="text-center">UI/UX Design</a>
+                        </h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Categories End -->
+
+    <!-- Add this section after the Categories section and before the main courses list -->
+    <div class="container-xxl py-5">
+        <div class="container">
+            <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+                <h6 class="section-title bg-white text-center text-primary px-3">Courses</h6>
+                <h1 class="mb-5">Popular Courses</h1>
+            </div>
+
+            <!-- All Courses List -->
+            <div class="row g-4 justify-content-center">
+                <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="course-item modern-card">
+                        <div class="position-relative overflow-hidden">
+                            <img class="img-fluid" src="img/course-1.jpg" alt="">
+                            <div class="course-overlay">
+                                <div class="course-preview">
+                                    <span class="course-level"><i class="fas fa-chart-bar me-2"></i>Beginner</span>
+                                    <span class="course-duration"><i class="far fa-clock me-2"></i>2.0 Hrs</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-content p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="course-category">Web Development</span>
+                                <span class="badge bg-success">Free</span>
+                            </div>
+                            <h5 class="course-title mb-3">HTML Course for Beginners</h5>
+                            <div class="course-meta mb-3">
+                                <span class="me-3"><i class="fa fa-user-graduate text-primary me-2"></i>5.8L+ Learners</span>
+                                <span><i class="fa fa-star text-warning me-2"></i>4.55</span>
+                            </div>
+                            <p class="course-desc text-muted mb-4">Learn HTML from scratch and build your first website with hands-on projects.</p>
+                            <button 
+                                onclick="enrollInCourse('html1', 'HTML Fundamentals', 'Learn HTML from scratch and build your first website with hands-on projects.')" 
+                                class="btn btn-primary btn-sm rounded-pill px-4 py-2 w-100 enroll-btn">
+                                Enroll Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="course-item modern-card">
+                        <div class="position-relative overflow-hidden">
+                            <img class="img-fluid" src="img/course-2.jpg" alt="">
+                            <div class="course-overlay">
+                                <div class="course-preview">
+                                    <span class="course-level"><i class="fas fa-chart-bar me-2"></i>Beginner</span>
+                                    <span class="course-duration"><i class="far fa-clock me-2"></i>4.0 Hrs</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-content p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="course-category">Web Development</span>
+                                <span class="badge bg-primary">Paid</span>
+                            </div>
+                            <h5 class="course-title mb-3">Front End Development-CSS</h5>
+                            <div class="course-meta mb-3">
+                                <span class="me-3"><i class="fa fa-user-graduate text-primary me-2"></i>5.2L+ Learners</span>
+                                <span><i class="fa fa-star text-warning me-2"></i>4.55</span>
+                            </div>
+                            <p class="course-desc text-muted mb-4">Learn CSS from scratch and build your first website with hands-on projects.</p>
+                            <button onclick="enrollInCourse('course-id-2', 'Front End Development-CSS', 'Learn CSS from scratch')" 
+                                    class="btn btn-primary btn-sm rounded-pill px-4 py-2 w-100 enroll-btn">
+                                Enroll Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="course-item modern-card">
+                        <div class="position-relative overflow-hidden">
+                            <img class="img-fluid" src="img/course-3.jpg" alt="">
+                            <div class="course-overlay">
+                                <div class="course-preview">
+                                    <span class="course-level"><i class="fas fa-chart-bar me-2"></i>Beginner</span>
+                                    <span class="course-duration"><i class="far fa-clock me-2"></i>2.5 Hrs</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-content p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="course-category">Web Development</span>
+                                <span class="badge bg-success">Free</span>
+                            </div>
+                            <h5 class="course-title mb-3">Introduction to JavaScript</h5>
+                            <div class="course-meta mb-3">
+                                <span class="me-3"><i class="fa fa-user-graduate text-primary me-2"></i>76L+ Learners</span>
+                                <span><i class="fa fa-star text-warning me-2"></i>4.46</span>
+                            </div>
+                            <p class="course-desc text-muted mb-4">Learn JavaScript from scratch and build your first website with hands-on projects.</p>
+                            <button onclick="enrollInCourse('course-id-3', 'Introduction to JavaScript', 'Learn JavaScript from scratch')" 
+                                    class="btn btn-primary btn-sm rounded-pill px-4 py-2 w-100 enroll-btn">
+                                Enroll Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="course-item modern-card">
+                        <div class="position-relative overflow-hidden">
+                            <img class="img-fluid" src="img/course-4.jpg" alt="">
+                            <div class="course-overlay">
+                                <div class="course-preview">
+                                    <span class="course-level"><i class="fas fa-chart-bar me-2"></i>Beginner</span>
+                                    <span class="course-duration"><i class="far fa-clock me-2"></i>3.0 Hrs</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-content p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="course-category">Web Development</span>
+                                <span class="badge bg-primary">Paid</span>
+                            </div>
+                            <h5 class="course-title mb-3">Python Programming</h5>
+                            <div class="course-meta mb-3">
+                                <span class="me-3"><i class="fa fa-user-graduate text-primary me-2"></i>3.3L+ Learners</span>
+                                <span><i class="fa fa-star text-warning me-2"></i>3.54</span>
+                            </div>
+                            <p class="course-desc text-muted mb-4">Learn Python from scratch and build your first website with hands-on projects.</p>
+                            <button onclick="enrollInCourse('course-id-4', 'Python Programming', 'Learn Python from scratch')" 
+                                    class="btn btn-primary btn-sm rounded-pill px-4 py-2 w-100 enroll-btn">
+                                Enroll Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="course-item modern-card">
+                        <div class="position-relative overflow-hidden">
+                            <img class="img-fluid" src="img/course-5.jpg" alt="">
+                            <div class="course-overlay">
+                                <div class="course-preview">
+                                    <span class="course-level"><i class="fas fa-chart-bar me-2"></i>Intermediate</span>
+                                    <span class="course-duration"><i class="far fa-clock me-2"></i>5.0 Hrs</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-content p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="course-category">Data Science</span>
+                                <span class="badge bg-success">Free</span>
+                            </div>
+                            <h5 class="course-title mb-3">SQL for Data Science</h5>
+                            <div class="course-meta mb-3">
+                                <span class="me-3"><i class="fa fa-user-graduate text-primary me-2"></i>1.3L+ Learners</span>
+                                <span><i class="fa fa-star text-warning me-2"></i>4.54</span>
+                            </div>
+                            <p class="course-desc text-muted mb-4">Learn SQL for data analysis and database management.</p>
+                            <button onclick="enrollInCourse('course-id-5', 'SQL for Data Science', 'Learn SQL for data analysis and database management')" 
+                                    class="btn btn-primary btn-sm rounded-pill px-4 py-2 w-100 enroll-btn">
+                                Enroll Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="course-item modern-card">
+                        <div class="position-relative overflow-hidden">
+                            <img class="img-fluid" src="img/course-6.jpg" alt="">
+                            <div class="course-overlay">
+                                <div class="course-preview">
+                                    <span class="course-level"><i class="fas fa-chart-bar me-2"></i>Beginner</span>
+                                    <span class="course-duration"><i class="far fa-clock me-2"></i>4.5 Hrs</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-content p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="course-category">AI</span>
+                                <span class="badge bg-success">Free</span>
+                            </div>
+                            <h5 class="course-title mb-3">ChatGPT for Beginners</h5>
+                            <div class="course-meta mb-3">
+                                <span class="me-3"><i class="fa fa-user-graduate text-primary me-2"></i>3.5L+ Learners</span>
+                                <span><i class="fa fa-star text-warning me-2"></i>3.55</span>
+                            </div>
+                            <p class="course-desc text-muted mb-4">Learn about ChatGPT and its applications.</p>
+                            <button onclick="enrollInCourse('course-id-6', 'ChatGPT for Beginners', 'Learn about ChatGPT and its applications')" 
+                                    class="btn btn-primary btn-sm rounded-pill px-4 py-2 w-100 enroll-btn">
+                                Enroll Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="course-item modern-card">
+                        <div class="position-relative overflow-hidden">
+                            <img class="img-fluid" src="img/course-7.jpg" alt="">
+                            <div class="course-overlay">
+                                <div class="course-preview">
+                                    <span class="course-level"><i class="fas fa-chart-bar me-2"></i>Beginner</span>
+                                    <span class="course-duration"><i class="far fa-clock me-2"></i>3.0 Hrs</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-content p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="course-category">Cloud Computing</span>
+                                <span class="badge bg-success">Free</span>
+                            </div>
+                            <h5 class="course-title mb-3">AWS for Beginners</h5>
+                            <div class="course-meta mb-3">
+                                <span class="me-3"><i class="fa fa-user-graduate text-primary me-2"></i>1L+ Learners</span>
+                                <span><i class="fa fa-star text-warning me-2"></i>4.53</span>
+                            </div>
+                            <p class="course-desc text-muted mb-4">Learn about AWS and its services.</p>
+                            <button onclick="enrollInCourse('course-id-7', 'AWS for Beginners', 'Learn about AWS and its services')" 
+                                    class="btn btn-primary btn-sm rounded-pill px-4 py-2 w-100 enroll-btn">
+                                Enroll Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="course-item modern-card">
+                        <div class="position-relative overflow-hidden">
+                            <img class="img-fluid" src="img/course-8.jpg" alt="">
+                            <div class="course-overlay">
+                                <div class="course-preview">
+                                    <span class="course-level"><i class="fas fa-chart-bar me-2"></i>Intermediate</span>
+                                    <span class="course-duration"><i class="far fa-clock me-2"></i>3.5 Hrs</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-content p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="course-category">Cloud Computing</span>
+                                <span class="badge bg-primary">Paid</span>
+                            </div>
+                            <h5 class="course-title mb-3">Microsoft Azure Essentials</h5>
+                            <div class="course-meta mb-3">
+                                <span class="me-3"><i class="fa fa-user-graduate text-primary me-2"></i>4.4L+ Learners</span>
+                                <span><i class="fa fa-star text-warning me-2"></i>4.64</span>
+                            </div>
+                            <p class="course-desc text-muted mb-4">Learn about Microsoft Azure and its services.</p>
+                            <button onclick="enrollInCourse('course-id-8', 'Microsoft Azure Essentials', 'Learn about Microsoft Azure and its services')" 
+                                    class="btn btn-primary btn-sm rounded-pill px-4 py-2 w-100 enroll-btn">
+                                Enroll Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="course-item modern-card">
+                        <div class="position-relative overflow-hidden">
+                            <img class="img-fluid" src="img/course-9.jpg" alt="">
+                            <div class="course-overlay">
+                                <div class="course-preview">
+                                    <span class="course-level"><i class="fas fa-chart-bar me-2"></i>Beginner</span>
+                                    <span class="course-duration"><i class="far fa-clock me-2"></i>3.5 Hrs</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-content p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="course-category">Data Analysis</span>
+                                <span class="badge bg-success">Free</span>
+                            </div>
+                            <h5 class="course-title mb-3">Introduction to MS Excel</h5>
+                            <div class="course-meta mb-3">
+                                <span class="me-3"><i class="fa fa-user-graduate text-primary me-2"></i>4.2L+ Learners</span>
+                                <span><i class="fa fa-star text-warning me-2"></i>4.6</span>
+                            </div>
+                            <p class="course-desc text-muted mb-4">Learn the basics of Microsoft Excel for data analysis.</p>
+                            <button onclick="enrollInCourse('course-id-9', 'Introduction to MS Excel', 'Learn the basics of Microsoft Excel for data analysis')" 
+                                    class="btn btn-primary btn-sm rounded-pill px-4 py-2 w-100 enroll-btn">
+                                Enroll Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="course-item modern-card">
+                        <div class="position-relative overflow-hidden">
+                            <img class="img-fluid" src="img/course-10.jpg" alt="">
+                            <div class="course-overlay">
+                                <div class="course-preview">
+                                    <span class="course-level"><i class="fas fa-chart-bar me-2"></i>Intermediate</span>
+                                    <span class="course-duration"><i class="far fa-clock me-2"></i>2.5 Hrs</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-content p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="course-category">Data Analysis</span>
+                                <span class="badge bg-primary">Paid</span>
+                            </div>
+                            <h5 class="course-title mb-3">Statistics For Data Science</h5>
+                            <div class="course-meta mb-3">
+                                <span class="me-3"><i class="fa fa-user-graduate text-primary me-2"></i>5.3L+ Learners</span>
+                                <span><i class="fa fa-star text-warning me-2"></i>4.55</span>
+                            </div>
+                            <p class="course-desc text-muted mb-4">Learn statistical methods for data analysis.</p>
+                            <button onclick="enrollInCourse('course-id-10', 'Statistics For Data Science', 'Learn statistical methods for data analysis')" 
+                                    class="btn btn-primary btn-sm rounded-pill px-4 py-2 w-100 enroll-btn">
+                                Enroll Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="course-item modern-card">
+                        <div class="position-relative overflow-hidden">
+                            <img class="img-fluid" src="img/course-11.jpg" alt="">
+                            <div class="course-overlay">
+                                <div class="course-preview">
+                                    <span class="course-level"><i class="fas fa-chart-bar me-2"></i>Beginner</span>
+                                    <span class="course-duration"><i class="far fa-clock me-2"></i>2.0 Hrs</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-content p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="course-category">Web Development</span>
+                                <span class="badge bg-success">Free</span>
+                            </div>
+                            <h5 class="course-title mb-3">Java Programming</h5>
+                            <div class="course-meta mb-3">
+                                <span class="me-3"><i class="fa fa-user-graduate text-primary me-2"></i>5L+ Learners</span>
+                                <span><i class="fa fa-star text-warning me-2"></i>4.45</span>
+                            </div>
+                            <p class="course-desc text-muted mb-4">Learn Java from scratch and build your first website with hands-on projects.</p>
+                            <button onclick="enrollInCourse('course-id-11', 'Java Programming', 'Learn Java from scratch and build your first website with hands-on projects')" 
+                                    class="btn btn-primary btn-sm rounded-pill px-4 py-2 w-100 enroll-btn">
+                                Enroll Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="course-item modern-card">
+                        <div class="position-relative overflow-hidden">
+                            <img class="img-fluid" src="img/course-12.png" alt="">
+                            <div class="course-overlay">
+                                <div class="course-preview">
+                                    <span class="course-level"><i class="fas fa-chart-bar me-2"></i>Beginner</span>
+                                    <span class="course-duration"><i class="far fa-clock me-2"></i>1.5 Hrs</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="course-content p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="course-category">Programming</span>
+                                <span class="badge bg-success">Free</span>
+                            </div>
+                            <h5 class="course-title mb-3">C for Beginners</h5>
+                            <div class="course-meta mb-3">
+                                <span class="me-3"><i class="fa fa-user-graduate text-primary me-2"></i>1.1L+ Learners</span>
+                                <span><i class="fa fa-star text-warning me-2"></i>4.5</span>
+                            </div>
+                            <p class="course-desc text-muted mb-4">Learn C programming from scratch.</p>
+                            <button onclick="enrollInCourse('course-id-12', 'C for Beginners', 'Learn C programming from scratch')" 
+                                    class="btn btn-primary btn-sm rounded-pill px-4 py-2 w-100 enroll-btn">
+                                Enroll Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Courses Section -->
+            <div class="mt-5 pt-5">
+                <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+                    <h6 class="section-title bg-white text-center text-primary px-3">My Learning</h6>
+                    <h1 class="mb-5">My Enrolled Courses</h1>
+                </div>
+                
+                <!-- Message for no courses -->
+                <div id="noCoursesMessage" class="text-center" style="display: none;">
+                    <p class="text-muted">You haven't enrolled in any courses yet.</p>
+                    <p>Start your learning journey today!</p>
+                </div>
+                
+                <!-- Enrolled courses will be displayed here -->
+                <div id="enrolledCoursesSection" class="row g-4 justify-content-center">
+                    <!-- Enrolled courses will be dynamically added here -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- Courses End -->
+
+
+    <!-- Footer Start -->
+    <footer class="modern-footer bg-gradient-dark text-light pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
+        <div class="container py-5">
+            <div class="row g-5">
+                <div class="col-lg-4 col-md-6">
+                    <h4 class="text-white mb-4 fw-bold">Quick Links</h4>
+                    <div class="d-flex flex-column">
+                        <a class="footer-link mb-2" href="about.html">About Us</a>
+                        <a class="footer-link mb-2" href="contact.html">Contact Us</a>
+                        <a class="footer-link mb-2" href="focus-mode.html">Focus Mode</a>
+                        <a class="footer-link mb-2" href="testimonial.html">Testimonials</a>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <h4 class="text-white mb-4 fw-bold">Connect With Us</h4>
+                    <div class="contact-info">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="icon-box me-3">
+                                <i class="fa fa-map-marker-alt"></i>
+                            </div>
+                            <p class="mb-0">Phagwara, Punjab, India</p>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="icon-box me-3">
+                                <i class="fa fa-phone-alt"></i>
+                            </div>
+                            <p class="mb-0">+91 8974573265</p>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="icon-box me-3">
+                                <i class="fa fa-envelope"></i>
+                            </div>
+                            <p class="mb-0">codekiduniya@gmail.com</p>
+                        </div>
+                    </div>
+                    <div class="d-flex pt-2">
+                        <a class="social-link" href="https://github.com/AmeySharma1" target="_blank">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a class="social-link" href="https://www.instagram.com/ameysharma61/" target="_blank">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a class="social-link" href="https://www.linkedin.com/in/ameysh/" target="_blank">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6 ps-lg-5">
+                    <h4 class="text-white mb-4 fw-bold">About Code Ki Duniya</h4>
+                    <p class="text-light-muted">We are dedicated to providing high-quality programming education to everyone. Our platform offers free courses, tutorials, and resources to help you master coding skills.</p>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="footer-bottom py-4 border-top border-light border-opacity-10">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <p class="mb-0">&copy; 2024 <a href="index.html" class="footer-brand">Code Ki Duniya</a>. All Rights Reserved.</p>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">
+                        <p class="mb-0">Made with <i class="fas fa-heart text-danger"></i> in India</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- Footer End -->
+
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/wow/wow.min.js"></script>
+    <script src="lib/easing/easing.min.js"></script>
+    <script src="lib/waypoints/waypoints.min.js"></script>
+    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="js/main.js"></script>
+    <!-- <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBrjLAawJcTVU3ZWnARUiODi_Ak4oQPPtM",
+            authDomain: "sign-up-8e1fd.firebaseapp.com",
+            projectId: "sign-up-8e1fd",
+            storageBucket: "sign-up-8e1fd.firebasestorage.app",
+            messagingSenderId: "1017405156646",
+            appId: "1:1017405156646:web:baffb06b8d3e33dd3765e7",
+            measurementId: "G-5MR62NVMRG"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Check authentication state
+        auth.onAuthStateChanged((user) => {
+            const authSection = document.getElementById('authSection');
+            if (user) {
+                // User is signed in
+                db.collection('users').doc(user.uid).get().then((doc) => {
+                    authSection.innerHTML = `
+                        <div class="nav-item dropdown">
+                            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                               
+                                ${user.displayName || 'User'}
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end rounded-lg shadow-sm">
+                                <div class="px-4 py-3">
+                                    <div class="text-sm">${user.email}</div>
+                                </div>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#" onclick="handleLogout()">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                // No user is signed in
+                authSection.innerHTML = '<a href="login.html" class="nav-item nav-link">Sign In</a>';
+            }
+        });
+
+        function handleLogout() {
+            auth.signOut()
+                .then(() => {
+                    window.location.reload();
+                })
+                .catch((error) => {
+                    console.error("Logout error:", error);
+                    alert('Error signing out: ' + error.message);
+                });
+        }
+    </script> -->
+</body>
+
+</html>

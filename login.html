@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Secret Coder : Login</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Favicon -->
+    <link href="https://img.icons8.com/?size=100&id=Lb2lVEO0t60w&format=png&color=000000" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="lib/animate/animate.min.css" rel="stylesheet">
+    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="css/style.css" rel="stylesheet">
+
+    <style>
+        .password-field {
+            position: relative;
+        }
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #6c757d;
+        }
+        .password-toggle:hover {
+            color: var(--primary);
+        }
+    </style>
+
+</head>
+
+<body>
+    <!-- Spinner Start -->
+    <div id="spinner"
+        class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+    <!-- Spinner End -->
+
+
+    <!-- Navbar Start -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm sticky-top">
+        <div class="container">
+            <a href="index.html" class="navbar-brand">
+                <img src="img/code-ki-duniya-logo.svg" alt="Code Ki Duniya Logo" height="48" style="margin-right: 12px;">
+                <span style="font-size: 1.6rem; background: linear-gradient(45deg, #7E3AF2, #6C2BD9); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Code Ki Duniya</span>
+            </a>
+            <button type="button" class="navbar-toggler border-0" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <div class="navbar-nav ms-auto align-items-center">
+                    <a href="index.html" class="nav-item nav-link">Home</a>
+                    <a href="courses.html" class="nav-item nav-link">Courses</a>
+                    <a href="about.html" class="nav-item nav-link">About</a>
+                    <a href="focus-mode.html" class="nav-item nav-link">Focus Mode</a>
+                    <div class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
+                        <div class="dropdown-menu rounded-lg shadow-sm">
+                            <!-- <a href="team.html" class="dropdown-item">Our Team</a> -->
+                            <a href="testimonial.html" class="dropdown-item">Testimonials</a>
+                        </div>
+                    </div>
+                    <a href="contact.html" class="nav-item nav-link">Contact</a>
+                    <a href="login.html" class="nav-item nav-link active">Sign In</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Navbar End -->
+
+        <!-- Header Start -->
+        <div class="container-fluid bg-primary py-5 mb-5 page-header">
+            <div class="container py-5">
+                <div class="row justify-content-center">
+                    <div class="col-lg-10 text-center">
+                        <h1 class="display-3 text-white animated slideInDown">Login</h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb justify-content-center">
+                                <li class="breadcrumb-item"><a class="text-white" href="index.html">Home</a></li>
+                                <li class="breadcrumb-item text-white active" aria-current="page">Login</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Header End -->
+    
+
+
+    <!-- Login Start -->
+    <div class="auth-wrapper py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-5 col-md-7">
+                    <div class="auth-card wow fadeInUp" data-wow-delay="0.1s">
+                        <div class="text-center mb-4">
+                            <img src="img/code-ki-duniya-logo.svg" alt="Logo" height="60" class="mb-3">
+                            <h3 class="mb-2">Welcome Back!</h3>
+                            <p class="text-muted">Please sign in to continue</p>
+                        </div>
+
+                        <form class="auth-form" action="index.html" method="POST" onsubmit="return handleLogin(event)">
+                            <div class="form-group mb-4">
+                                <div class="form-floating">
+                                    <input type="email" class="form-control" id="email" placeholder="name@example.com" required>
+                                    <label for="email">Email address</label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group mb-4">
+                                <div class="form-floating password-field">
+                                    <input type="password" class="form-control" id="password" placeholder="Password" required>
+                                    <label for="password">Password</label>
+                                    <span class="password-toggle" onclick="togglePassword('password', this)">
+                                        <i class="far fa-eye"></i>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="remember">
+                                    <label class="form-check-label" for="remember">Remember me</label>
+                                </div>
+                                <a href="#" class="forgot-password">Forgot password?</a>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 mb-4">
+                                Sign in
+                                <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+
+                            <p class="text-center mb-0">
+                                Don't have an account? <a href="signup.html" class="text-primary">Create account</a>
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Login End -->
+
+
+    <!-- Footer Start -->
+    <footer class="modern-footer bg-gradient-dark text-light pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
+        <div class="container py-5">
+            <div class="row g-5">
+                <div class="col-lg-4 col-md-6">
+                    <h4 class="text-white mb-4 fw-bold">Quick Links</h4>
+                    <div class="d-flex flex-column">
+                        <a class="footer-link mb-2" href="about.html">About Us</a>
+                        <a class="footer-link mb-2" href="contact.html">Contact Us</a>
+                        <a class="footer-link mb-2" href="focus-mode.html">Focus Mode</a>
+                        <a class="footer-link mb-2" href="testimonial.html">Testimonials</a>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <h4 class="text-white mb-4 fw-bold">Connect With Us</h4>
+                    <div class="contact-info">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="icon-box me-3">
+                                <i class="fa fa-map-marker-alt"></i>
+                            </div>
+                            <p class="mb-0">Phagwara, Punjab, India</p>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="icon-box me-3">
+                                <i class="fa fa-phone-alt"></i>
+                            </div>
+                            <p class="mb-0">+91 8974573265</p>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="icon-box me-3">
+                                <i class="fa fa-envelope"></i>
+                            </div>
+                            <p class="mb-0">codekiduniya@gmail.com</p>
+                        </div>
+                    </div>
+                    <div class="d-flex pt-2">
+                        <a class="social-link" href="https://github.com/AmeySharma1" target="_blank">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a class="social-link" href="https://www.instagram.com/ameysharma61/" target="_blank">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a class="social-link" href="https://www.linkedin.com/in/ameysh/" target="_blank">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6 ps-lg-5">
+                    <h4 class="text-white mb-4 fw-bold">About Code Ki Duniya</h4>
+                    <p class="text-light-muted">We are dedicated to providing high-quality programming education to everyone. Our platform offers free courses, tutorials, and resources to help you master coding skills.</p>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="footer-bottom py-4 border-top border-light border-opacity-10">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <p class="mb-0">&copy; 2024 <a href="index.html" class="footer-brand">Code Ki Duniya</a>. All Rights Reserved.</p>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">
+                        <p class="mb-0">Made with <i class="fas fa-heart text-danger"></i> in India</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/wow/wow.min.js"></script>
+    <script src="lib/easing/easing.min.js"></script>
+    <script src="lib/waypoints/waypoints.min.js"></script>
+    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="js/main.js"></script>
+
+    <!-- Add Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script type="module">
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBrjLAawJcTVU3ZWnARUiODi_Ak4oQPPtM",
+            authDomain: "sign-up-8e1fd.firebaseapp.com",
+            projectId: "sign-up-8e1fd",
+            storageBucket: "sign-up-8e1fd.firebasestorage.app",
+            messagingSenderId: "1017405156646",
+            appId: "1:1017405156646:web:baffb06b8d3e33dd3765e7",
+            measurementId: "G-5MR62NVMRG"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Make services available globally
+        window.auth = auth;
+        window.db = db;
+    </script>
+
+    <script>
+        // Check if user is already logged in
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // Replace entire auth wrapper with profile view
+                const authWrapper = document.querySelector('.auth-wrapper');
+                authWrapper.innerHTML = `
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-5 col-md-7">
+                                <div class="auth-card wow fadeInUp" data-wow-delay="0.1s">
+                                    <div class="text-center mb-4">
+                                        <img src="img/default-avatar.png" alt="Profile" 
+                                            class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                                        <h3 class="mb-2">${user.displayName || 'User'}</h3>
+                                        <p class="text-muted">${user.email}</p>
+                                        <div class="badge bg-success mb-3">Successfully Logged In</div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-center gap-3">
+                                        <a href="index.html" class="btn btn-primary px-4">
+                                            <i class="fas fa-home me-2"></i>Home
+                                        </a>
+                                        <button onclick="handleLogout()" class="btn btn-outline-danger px-4">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Also update the Sign In link in navbar to show user profile
+                const navSignIn = document.querySelector('a[href="login.html"]');
+                if (navSignIn) {
+                    navSignIn.innerHTML = `
+                        <img src="img/default-avatar.png" alt="Profile" 
+                            class="rounded-circle me-2" style="width: 24px; height: 24px;">
+                        ${user.displayName || 'User'}
+                    `;
+                }
+            }
+        });
+
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                showError('Please fill in all fields');
+                return false;
+            }
+            
+            // Show loading state
+            const submitButton = document.querySelector('button[type="submit"]');
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Signing in...';
+            submitButton.disabled = true;
+            
+            // Sign in with Firebase
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    console.log("Logged in user:", user);
+                    showSuccess(user.displayName || user.email);
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    console.error("Login error:", errorCode, errorMessage);
+                    let message = 'An error occurred during login.';
+                    switch (errorCode) {
+                        case 'auth/wrong-password':
+                            message = 'Incorrect password. Please try again.';
+                            break;
+                        case 'auth/user-not-found':
+                            message = 'No account found with this email.';
+                            break;
+                        case 'auth/invalid-email':
+                            message = 'Invalid email address.';
+                            break;
+                        case 'auth/too-many-requests':
+                            message = 'Too many failed attempts. Please try again later.';
+                            break;
+                    }
+                    showError(message);
+                    submitButton.innerHTML = 'Sign in <i class="fas fa-arrow-right ms-2"></i>';
+                    submitButton.disabled = false;
+                });
+            
+            return false;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('loginError') || document.createElement('div');
+            errorDiv.id = 'loginError';
+            errorDiv.className = 'alert alert-danger mt-3';
+            errorDiv.textContent = message;
+            
+            const form = document.querySelector('.auth-form');
+            if (!document.getElementById('loginError')) {
+                form.insertBefore(errorDiv, form.firstChild);
+            }
+        }
+
+        function handleLogout() {
+            const logoutBtn = event.target.closest('button');
+            logoutBtn.disabled = true;
+            logoutBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Logging out...';
+            
+            auth.signOut()
+                .then(() => {
+                    window.location.href = 'index.html';
+                })
+                .catch((error) => {
+                    console.error("Logout error:", error);
+                    alert('Error signing out: ' + error.message);
+                    logoutBtn.disabled = false;
+                    logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt me-2"></i>Logout';
+                });
+        }
+
+        function togglePassword(inputId, toggleElement) {
+            const input = document.getElementById(inputId);
+            const icon = toggleElement.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        function showSuccess(username) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'alert alert-success mt-3 d-flex align-items-center';
+            successDiv.innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>
+                Welcome back, ${username}! Redirecting...
+            `;
+            
+            const form = document.querySelector('.auth-form');
+            form.insertBefore(successDiv, form.firstChild);
+        }
+    </script>
+</body>
+
+</html>

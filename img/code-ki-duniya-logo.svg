@@ -1,0 +1,13 @@
+<svg width="45" height="45" viewBox="0 0 45 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="45" height="45" rx="8" fill="#4361EE"/>
+  
+  <!-- Circuit board chip icon -->
+  <path d="M22.5 12C19.5 12 17 14.5 17 17.5V20H15C14.4477 20 14 20.4477 14 21V29C14 29.5523 14.4477 30 15 30H30C30.5523 30 31 29.5523 31 29V21C31 20.4477 30.5523 20 30 20H28V17.5C28 14.5 25.5 12 22.5 12ZM22.5 14C24.4 14 26 15.6 26 17.5V20H19V17.5C19 15.6 20.6 14 22.5 14Z" fill="white"/>
+  
+  <!-- Connection lines -->
+  <path d="M18 25H16V27H18V25Z" fill="white"/>
+  <path d="M22 25H20V27H22V25Z" fill="white"/>
+  <path d="M26 25H24V27H26V25Z" fill="white"/>
+  <path d="M30 25H28V27H30V25Z" fill="white"/>
+</svg> 
