@@ -38,11 +38,11 @@ These technologies demonstrate our expertise in implementing a high-quality solu
 ------------------------
 Problem Understanding 
 -----------------------
-1> Our project clearly defines and addresses multiple student challenges:
-2> Lack of personalized learning → Solved through AI recommendations.
-3> Difficulty in focusing while studying → Addressed with the focus extension.
-4> Limited real-time assistance → Solved using an AI chatbot.
-5> Course management issues → Simplified through a seamless enrollment system.
+1. Our project clearly defines and addresses multiple student challenges:
+2. Lack of personalized learning → Solved through AI recommendations.
+3. Difficulty in focusing while studying → Addressed with the focus extension.
+4. Limited real-time assistance → Solved using an AI chatbot.
+5. Course management issues → Simplified through a seamless enrollment system.
 
 --------------------------
 Implementation & Quality 
