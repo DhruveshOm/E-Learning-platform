@@ -29,10 +29,10 @@ The solution addresses real-world student challenges such as finding the right c
 Technical Proficiency 
 ---------------------
 Our project utilizes:
-Full-Stack Web Development: Built using Express,  Firebase, and JavaScript.
-AI & Machine Learning: The recommendation system personalizes course suggestions based on user behavior.
-Cloud Deployment: The recommendation system is hosted on Render for scalability.
-User Authentication & Security: Secure login ensures data protection.
+1. Full-Stack Web Development: Built using Express,  Firebase, and JavaScript.
+2. AI & Machine Learning: The recommendation system personalizes course suggestions based on user behavior.
+3. Cloud Deployment: The recommendation system is hosted on Render for scalability.
+4. User Authentication & Security: Secure login ensures data protection.
 These technologies demonstrate our expertise in implementing a high-quality solution.
 
 ------------------------
@@ -58,8 +58,8 @@ Our platform has the potential to revolutionize e-learning by improving student 
 SDG Goal Evaluation 
 --------------------
 The project aligns with multiple UN Sustainable Development Goals, particularly:
-Goal 4: Quality Education – Enhancing learning experiences through AI and personalized recommendations.
-Goal 8: Decent Work and Economic Growth – Enabling skill development for better career opportunities.
+1. Goal 4: Quality Education – Enhancing learning experiences through AI and personalized recommendations.
+2. Goal 8: Decent Work and Economic Growth – Enabling skill development for better career opportunities.
 
 -----------
 Conclusion
