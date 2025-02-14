@@ -1880,65 +1880,6 @@ h6:not(.text-white),
 
 
 
-.chatbot-container {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1000;
-}
-
-.chat-icon {
-    width: 60px;
-    height: 60px;
-    background-color: #090909;
-    border-radius: 50%;
-    box-shadow: 0 4px 6px rgba(216, 138, 138, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 30px;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}
-
-.chat-icon:hover {
-    transform: scale(1.1);
-}
-
-.chat-frame {
-    width: 250px;
-    height: 500px;
-    border: none;
-    border-radius: 15px;
-    position: fixed;
-    bottom: 100px;
-    right: 220px;
-    box-shadow: 0 6px 12px rgba(13, 10, 10, 0.4);
-    display: none;
-    margin-right: 350px;
-    margin-bottom: 100px;
-}
-
-.close-btn {
-    position: absolute;
-    top: 5px;
-    right: 10px;
-    background: rgb(255, 0, 0);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 25px;
-    height: 25px;
-    cursor: pointer;
-    font-weight: bold;
-    z-index: 1001;
-}
-
-
-
-
-
 
 
 
@@ -2033,3 +1974,63 @@ iframe img {
 .close-btn:hover {
     color: #ff0000;
 }
+
+
+
+
+.chatbot-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.chat-icon {
+    width: 60px;
+    height: 60px;
+    background-color: #007BFF;
+    border-radius: 50%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 30px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.chat-icon:hover {
+    transform: scale(1.1);
+}
+
+.chat-frame {
+    width: 350px;
+    height: 500px;
+    border: none;
+    border-radius: 15px;
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+    display: none;
+    background-color: #fff;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: red;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-weight: bold;
+    z-index: 1001;
+}
+
+
+

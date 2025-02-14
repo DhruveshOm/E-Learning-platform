@@ -182,17 +182,17 @@
 
 
 
-function toggleChat() {
-    const frame = document.getElementById('chat-frame');
-    const icon = document.querySelector('.chat-icon');
-    if (frame.style.display === 'none') {
-        frame.style.display = 'block';
-        icon.style.display = 'none';
-    } else {
-        frame.style.display = 'none';
-        icon.style.display = 'flex';
-    }
-}
+// function toggleChat() {
+//     const frame = document.getElementById('chat-frame');
+//     const icon = document.querySelector('.chat-icon');
+//     if (frame.style.display === 'none') {
+//         frame.style.display = 'block';
+//         icon.style.display = 'none';
+//     } else {
+//         frame.style.display = 'none';
+//         icon.style.display = 'flex';
+//     }
+// }
 
 
 
@@ -206,4 +206,21 @@ function openIframe() {
 function closeIframe() {
     document.getElementById("iframe-modal").style.display = "none";
     document.getElementById("iframe").src = ""; // Clear the iframe content
+}
+
+
+
+
+
+
+function toggleChat() {
+    const frame = document.getElementById('chat-frame');
+    const icon = document.querySelector('.chat-icon');
+    if (frame.style.display === 'none') {
+        frame.style.display = 'block';
+        icon.style.display = 'none';
+    } else {
+        frame.style.display = 'none';
+        icon.style.display = 'flex';
+    }
 }

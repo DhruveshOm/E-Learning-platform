@@ -35,6 +35,73 @@
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
    
+    <!-- Add this CSS in the head section, after other stylesheet links -->
+    <style>
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .chat-icon {
+            width: 60px;
+            height: 60px;
+            background-color: #7E3AF2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .chat-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .chat-frame {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            display: none;
+            overflow: hidden;
+        }
+
+        .chat-frame .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+            z-index: 1;
+        }
+
+        .chat-frame iframe {
+            width: 100%;
+            height: 100%;
+        }
+
+        @media (max-width: 576px) {
+            .chat-frame {
+                width: 300px;
+                height: 450px;
+                right: 10px;
+                bottom: 80px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -91,20 +158,21 @@
     </div>
     
     <!-- Navbar End -->
+    <!-- <iframe src="https://www.chatbase.co/chatbot-iframe/rc4eL59ygk3vmgM_zWwyi"  -->
 
+    <div class="chatbot-container">
+        <!-- Chat Icon -->
+        <div class="chat-icon" onclick="toggleChat()">
+            💬
+        </div>
     
-    <div class="Chatt">
-        <div class="chatbot-container">
-            <!-- Chat Icon -->
-            <div class="chat-icon" onclick="toggleChat()">
-                💬</div>
-            <!-- Chat Frame -->
-            <div id="chat-frame" class="chat-frame">
-                <button class="close-btn" onclick="toggleChat()">X</button>
-                <iframe src="https://www.chatbase.co/chatbot-iframe/rc4eL59ygk3vmgM_zWwyi" width="100%" height="100%" style="border: none; border-radius: 15px;" title="Chatbot"></iframe>
-            </div>
+        <!-- Chat Frame -->
+        <div id="chat-frame" class="chat-frame">
+            <button class="close-btn" onclick="toggleChat()">X</button>
+            <iframe src="https://www.chatbase.co/chatbot-iframe/rc4eL59ygk3vmgM_zWwyi" width="100%" height="100%" style="border: none; border-radius: 15px;" title="Chatbot"></iframe>
         </div>
     </div>
+
 
     <!-- Hero Start -->
     <div class="container-fluid p-0">
@@ -1000,6 +1068,18 @@
                     console.error("Logout error:", error);
                     alert('Error signing out: ' + error.message);
                 });
+        }
+    </script>
+
+    <!-- Add this JavaScript before the closing body tag -->
+    <script>
+        function toggleChat() {
+            const chatFrame = document.getElementById('chat-frame');
+            if (chatFrame.style.display === 'none' || !chatFrame.style.display) {
+                chatFrame.style.display = 'block';
+            } else {
+                chatFrame.style.display = 'none';
+            }
         }
     </script>
 </body>
